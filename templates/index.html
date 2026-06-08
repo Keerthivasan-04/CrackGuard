@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>CrackGuard AI</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/gaugeJS/dist/gauge.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+</head>
+
+<body>
+
+    <div id="particles-js"></div>
+
+    <div id="crackOverlay">
+        <div class="crack-line"></div>
+    </div>
+
+    <div class="container">
+
+        <h1>Structural Health Monitoring</h1>
+        <p class="subtitle">Deep Learning Based Crack Detection</p>
+
+        <form method="POST" action="/predict" enctype="multipart/form-data" onsubmit="startCrackAnimation(event)">
+            <label class="upload-btn">
+                <input type="file" name="image" required onchange="fileUploaded()">
+                <span id="uploadText">Upload Inspection Image</span>
+            </label>
+            <br>
+            <button type="submit" class="analyze-btn">Analyze Structure</button>
+        </form>
+
+        {% if result %}
+        <div class="result-box">
+
+            <h2>{{ result }}</h2>
+
+            <!-- Gauge meter only, confidence percentage removed -->
+            <canvas id="gaugeCanvas" width="300" height="180"></canvas>
+
+            <div class="confidence-number">
+                {{ confidence }}%
+            </div>
+
+            <div class="comparison updated-comparison">
+                <div>
+                    <h3>Original</h3>
+                    <img src="{{ image_path }}">
+                </div>
+                <div>
+                    <h3>Heatmap</h3>
+                    <img src="{{ heatmap_path }}">
+                </div>
+            </div>
+
+            <div class="buttons-under-images">
+                <a href="/download" class="download-btn">Download PDF Report</a>
+                <button onclick="openHistory()" class="history-btn">View Inspection History</button>
+            </div>
+
+        </div>
+        {% endif %}
+
+    </div>
+
+    <div id="historyPanel" class="history-panel">
+        <div class="history-header">
+            <h3>Inspection Timeline</h3>
+            <button onclick="closeHistory()" class="close-btn">✖</button>
+        </div>
+
+        <table>
+            <tr>
+                <th>Date</th>
+                <th>Result</th>
+                <th>Confidence</th>
+            </tr>
+            {% for item in history %}
+            <tr>
+                <td>{{ item.date }}</td>
+                <td>{{ item.result }}</td>
+                <td>{{ item.confidence }}%</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+    
+    <script>
+        var opts = {
+            angle: -0.5,
+            lineWidth: 0.25,
+            pointer: {
+                length: 0.6,
+                strokeWidth: 0.05,
+                color: "#ffffff"
+            },
+            colorStart: "#a855f7",
+            colorStop: "#00ffff",
+            strokeColor: "#111"
+        };
+
+        var gauge = new Gauge(
+            document.getElementById("gaugeCanvas")
+        ).setOptions(opts);
+
+        gauge.maxValue = 100;
+
+        const confidence = Number("{{ confidence }}");
+
+        gauge.set(confidence);
+    </script>
+    
+
+</body>
+
+</html>
