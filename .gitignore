@@ -1,1 +1,11 @@
 crack_classifier_model.h5 
+__pycache__/
+*.pyc
+
+venv/
+env/
+
+report.pdf
+
+static/uploaded.jpg
+static/heatmap.jpg
